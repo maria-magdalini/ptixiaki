@@ -156,7 +156,28 @@ class StartPage(tk.Frame):
     
 class PageOne(tk.Frame):
    
-     
+    def studentSelect(self, event):
+            global selected_item
+            selected_item = self.student_list.get(ANCHOR)
+            # PageTwo.labelChange()
+      
+            if len(selected_item) == 0:
+                pass
+            else:
+                self.studentNameEntry.delete(0,tk.END)
+                self.studentLastNameEntry.delete(0,tk.END)
+                self.studentUniversityEntry.delete(0,tk.END)
+                self.studentSerialTagEntry.delete(0,tk.END)
+
+                
+                    
+                self.studentNameEntry.insert(tk.END,selected_item[1]),
+                self.studentLastNameEntry.insert(tk.END,selected_item[2]),
+                self.studentUniversityEntry.insert(tk.END,selected_item[4]),
+                self.studentSerialTagEntry.insert(tk.END,selected_item[3])
+
+            return selected_item
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
          
@@ -164,38 +185,18 @@ class PageOne(tk.Frame):
         label.pack(pady=10, padx=10)
 
 
-        self.mainframe(controller,parent)
-    
-    def mainframe(self,controller,parent):
+      
         """       
           we need to pass the event in the studentSelect function because we bind it to the listbox 
           
         """     
-        def studentSelect(event):
-            global selected_item
-            selected_item = self.student_list.get(ANCHOR)
-      
-            if len(selected_item) == 0:
-                pass
-            else:
-                studentNameEntry.delete(0,tk.END)
-                studentLastNameEntry.delete(0,tk.END)
-                studentUniversityEntry.delete(0,tk.END)
-                studentSerialTagEntry.delete(0,tk.END)
-
-                
-                    
-                studentNameEntry.insert(tk.END,selected_item[1]),
-                studentLastNameEntry.insert(tk.END,selected_item[2]),
-                studentUniversityEntry.insert(tk.END,selected_item[4]),
-                studentSerialTagEntry.insert(tk.END,selected_item[3])
-
+        
                 
         def clearInputs():
-            studentNameEntry.delete(0,tk.END)
-            studentLastNameEntry.delete(0,tk.END)
-            studentUniversityEntry.delete(0,tk.END)
-            studentSerialTagEntry.delete(0,tk.END)
+            self.studentNameEntry.delete(0,tk.END)
+            self.studentLastNameEntry.delete(0,tk.END)
+            self.studentUniversityEntry.delete(0,tk.END)
+            self.studentSerialTagEntry.delete(0,tk.END)
 
         def delete_student():
             warning =  messagebox.askquestion('Οριστική Διαγραφη Μαθητή', 'Θέλετε να διαγράψετε οριστικά αυτόν τον Μαθητή')
@@ -217,7 +218,7 @@ class PageOne(tk.Frame):
         studentUniversity = tk.StringVar()
         
 
-        button = ttk.Button(self, text="Go to page 2",
+        button = ttk.Button(self, text="Καταχώρη Βαθμών",
                             command=lambda: controller.show_frame(PageTwo) ) #acts as a onClick event
         button.pack(side='bottom',pady=10, padx=10)
         studentsFrame = tk.Frame(self)
@@ -228,29 +229,29 @@ class PageOne(tk.Frame):
         
         centerFrame.pack()
 
-        studentNameLabel = ttk.Label(centerFrame, text="Ονομα",background='white')
-        studentNameLabel.pack( pady=10, padx=10, side="left")
+        self.studentNameLabel = ttk.Label(centerFrame, text="Ονομα",background='white')
+        self.studentNameLabel.pack( pady=10, padx=10, side="left")
 
-        studentNameEntry = ttk.Entry(centerFrame, textvariable=studentName)
-        studentNameEntry.pack( pady=10, padx=10, side="left") 
+        self.studentNameEntry = ttk.Entry(centerFrame, textvariable=studentName)
+        self.studentNameEntry.pack( pady=10, padx=10, side="left") 
 
-        studentLastNameLabel = ttk.Label(centerFrame, text="Επώνυμο",background='white')
-        studentLastNameLabel.pack( pady=10, padx=10, side="left")
+        self.studentLastNameLabel = ttk.Label(centerFrame, text="Επώνυμο",background='white')
+        self.studentLastNameLabel.pack( pady=10, padx=10, side="left")
 
-        studentLastNameEntry = ttk.Entry(centerFrame, textvariable=studentLastName)
-        studentLastNameEntry.pack( pady=10, padx=10, side="left")
+        self.studentLastNameEntry = ttk.Entry(centerFrame, textvariable=studentLastName)
+        self.studentLastNameEntry.pack( pady=10, padx=10, side="left")
 
-        studentSerialTagLabel = ttk.Label(centerFrame, text="Αριθμός Μητρώου",background='white')
-        studentSerialTagLabel.pack( pady=10, padx=10, side="left")
+        self.studentSerialTagLabel = ttk.Label(centerFrame, text="Αριθμός Μητρώου",background='white')
+        self.studentSerialTagLabel.pack( pady=10, padx=10, side="left")
         
-        studentSerialTagEntry = ttk.Entry(centerFrame, textvariable=studentSerialTag)
-        studentSerialTagEntry.pack( pady=10, padx=10, side="left")
+        self.studentSerialTagEntry = ttk.Entry(centerFrame, textvariable=studentSerialTag)
+        self.studentSerialTagEntry.pack( pady=10, padx=10, side="left")
 
-        studentUniversityLabel = ttk.Label(centerFrame, text="Ονομα Σχολής",background='white')
-        studentUniversityLabel.pack( pady=10, padx=10, side="left")
+        self.studentUniversityLabel = ttk.Label(centerFrame, text="Ονομα Σχολής",background='white')
+        self.studentUniversityLabel.pack( pady=10, padx=10, side="left")
         
-        studentUniversityEntry = ttk.Entry(centerFrame, textvariable=studentUniversity)
-        studentUniversityEntry.pack( pady=10, padx=10, side="left")
+        self.studentUniversityEntry = ttk.Entry(centerFrame, textvariable=studentUniversity)
+        self.studentUniversityEntry.pack( pady=10, padx=10, side="left")
 
 
         """
@@ -259,7 +260,7 @@ class PageOne(tk.Frame):
 
         def search(e):
            entry = dataEntry.get()
-           if entry ==' ':
+           if entry =='':
                db.showStudents(self.student_list)
            else:
                db.getStudentAsked(entry, self.student_list)
@@ -290,7 +291,7 @@ class PageOne(tk.Frame):
         self.student_list= tk.Listbox(listFrame, height=20, width=70, border=0)
         self.student_list.pack(pady=10, padx=10,side='left')
         #we need to pass the event in the studentSelect function because we bind it to the listbox 
-        self.student_list.bind('<<ListboxSelect>>', studentSelect) 
+        self.student_list.bind('<<ListboxSelect>>', self.studentSelect) 
         
         self.scrollBar = Scrollbar(listFrame, width=10)
         self.scrollBar.pack(side='left',fill='y')
@@ -299,7 +300,7 @@ class PageOne(tk.Frame):
         self.student_list.configure(yscrollcommand=self.scrollBar.set)
         self.scrollBar.configure(command=self.student_list.yview)
 
-
+        
         buttonsFrame = ttk.Frame(self)
         buttonsFrame.pack(padx=10, pady=10,)
        
@@ -324,8 +325,8 @@ class PageOne(tk.Frame):
 
         semesterA =  IntVar()
         semesterB =  IntVar()
+      
         
-     
        
         
 
@@ -347,13 +348,19 @@ class PageOne(tk.Frame):
 
 
 
-class PageTwo(tk.Frame):
-  
+class PageTwo(PageOne):
+     
+     
      def __init__(self, parent, controller):
         
         tk.Frame.__init__(self, parent)
-        label = ttk.Label(self, text="Page two", font=LargeFont)
-        label.pack(pady=10, padx=10)
+        
+        
+        self.insertGradesLabel = ttk.Label(self, text="Καταχώρηση Βαθμών Φοιτητή", font=LargeFont)
+        self.insertGradesLabel.pack(pady=10, padx=10)
+
+        gradesFrame = tk.Frame(self, background='blue')
+        gradesFrame.pack(expand=True)
 
         button = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
@@ -361,8 +368,43 @@ class PageTwo(tk.Frame):
         button2 = ttk.Button(self, text="Go to page 1",
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
         button2.pack(pady=10, padx=10)
+        
+        
+        self.mathGrade = tk.IntVar()
+        self.mathLabel = ttk.Label(gradesFrame, text='Μαθηματικα')
+        self.mathLabel.grid(row=0,column=0, padx=10, pady=10)
+        self.mathEntry = tk.Entry(gradesFrame, textvariable= self.mathGrade)
+        self.mathEntry.grid(row=0,column=1,padx=10, pady=10)
 
+        self.javaGrade = tk.IntVar()
+        self.javaLabel = ttk.Label(gradesFrame, text='Αντικειμενοστραφής Προγραμματισμός Ι')
+        self.javaLabel.grid(row=1,column=0,padx=10, pady=10)
+        self.javaEntry = tk.Entry(gradesFrame, textvariable= self.javaGrade)
+        self.javaEntry.grid(row=1,column=1,padx=10, pady=10)
 
+        self.c_Grade = tk.IntVar()
+        self.c_Label = ttk.Label(gradesFrame, text=' Προγραμματισμός Ι')
+        self.c_Label.grid(row=2,column=0,padx=10, pady=10)
+        self.c_Entry = tk.Entry(gradesFrame, textvariable=self.c_Grade)
+        self.c_Entry.grid(row=2,column=1,padx=10, pady=10)
+
+        self.macchineLearningGrade = tk.IntVar()
+        self.macchineLearningLabel = ttk.Label(gradesFrame, text=' Μηχανική Μάθηση')
+        self.macchineLearningLabel.grid(row=3,column=0,padx=10, pady=10)
+        self.macchineLearningEntry = tk.Entry(gradesFrame, textvariable=self.macchineLearningGrade)
+        self.macchineLearningEntry.grid(row=3,column=1,padx=10, pady=10)
+
+        button = ttk.Button(self, text="Εισαγωγή Φοιτητή",
+                            command=lambda:  labelChange(self, selected_item))
+        
+        button.pack()
+        
+        @staticmethod
+        def labelChange(self,selected_item):
+            name = selected_item[1] +' '+selected_item[2]
+            print (name)
+            self.insertGradesLabel.config(text = name)
+        
 
 class PageThree(tk.Frame):
      def __init__(self, parent, controller):
@@ -377,7 +419,9 @@ class PageThree(tk.Frame):
         f= Figure(figsize=(10,4), dpi=100)
         a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
         a.plot([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]) #X AXIS, Y AXIS FROM 0 TO 9 BOTH
-
+        """
+        students grades will be ploted when returned from the db 
+        """
         canvas = FigureCanvasTkAgg(f, master=self) #creating canvas
         canvas.draw() #drawing canvas
         canvas.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
@@ -386,7 +430,7 @@ class PageThree(tk.Frame):
         toobar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
         button.pack(pady=10, padx=10)
-
+        
 
 
 
