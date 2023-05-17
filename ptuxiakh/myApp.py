@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk as table
 from tkinter import *
 from tkinter import ANCHOR # gets the selected item in the listbox
 import ttkbootstrap as ttk
@@ -13,75 +14,11 @@ import numpy as np
 db = Database
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
+ 
 
 LargeFont  = ("serif", 12)
 
-class Database:
-    def __init__(self,db):
-        self.conn = sqlite3.connect(db)
-        self.cur = self.conn.cursor()
-        self.cur.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY , name TEXT, lastname TEXT, serial INTEGER, university TEXT)")
-        self.conn.commit()
 
-    def showStudents(self,student_list):
-            
-        student_list.delete(0, tk.END)
-        for student in self.fetch():
-            
-            student_list.insert(tk.END, student)
-        # print the entries in the console 
-
-    def getStudentAsked(self,serialTag, student_list):
-        self.cur.execute("SELECT * FROM students WHERE serial LIKE ? || '%'",(serialTag, ))
-        student = self.cur.fetchall()
-        student_list.delete(0, tk.END)
-        for row in student:
-            student_list.insert(tk.END,row)
-        
-
-    def fetch(self):
-        self.cur.execute("SELECT * FROM students")
-        rows = self.cur.fetchall()
-        for row in rows:
-            for entry in row:
-                print (row)
-        return rows
-    
-
-    def insert(self, lastname, firstname, serialtag,university):
-        # self.checkEntrys(serialtag)
-        
-        self.cur.execute("SELECT COUNT (serial) FROM students WHERE serial = ? ",(serialtag,))
-        rows = self.cur.fetchall()
-        """
-        rows variable returns a list containing a tuple
-        if there is a student with the given serial tag show error message
-        """
-        if rows[0][0] != 0:
-            messagebox.showerror('Λάθος Καταχώρηση','Υπάρχει ήδη φοιτητής με αυτόν τον αριθμό μητρώου ')
-            return rows.count
-        else:
-            self.cur.execute("INSERT INTO students VALUES(NULL,?,?,?,?)", (lastname, firstname,serialtag, university))
-            self.conn.commit()
-
-
-    def remove(self,id):
-        self.cur.execute("DELETE FROM students WHERE id=?", (id,))
-        self.conn.commit()
-
-    def update(self,id , firstname,lastname, university, serialtag,student_list):
-     
-
-        self.cur.execute("UPDATE students SET lastname = ?, name = ?, university = ?, serial = ? WHERE id=?", (lastname, firstname, university,serialtag,id))
-        self.conn.commit()
-        self.showStudents(student_list)
-
-
-    def fetchStudentsLecturesPassed(self,lecture,lectureGrade, studentName):
-        self.cur.execute(f"SELECT * FROM lectures,students WHERE lectures.lectureGrade > 4 AND studentName='{studentName}' ",)
-
-    def __del__(self):
-        self.conn.close()
 
 db = Database('student.db')
     
@@ -93,7 +30,7 @@ class App(tk.Tk):
                
         tk.Tk.__init__(self)
         #tk.Tk.iconbitmap = (self, default="icon.ico") change icon
-        tk.Tk.wm_title(self, "Managment System") # set title
+        tk.Tk.wm_title(self, "University of Thessaly MS") # set title
         container = tk.Frame(self) #Construct a frame widget with the parent MASTER.
         container.pack(side='top', fill="both", expand=True)
     
@@ -359,53 +296,140 @@ class PageTwo(PageOne):
         self.insertGradesLabel = ttk.Label(self, text="Καταχώρηση Βαθμών Φοιτητή", font=LargeFont)
         self.insertGradesLabel.pack(pady=10, padx=10)
 
-        gradesFrame = tk.Frame(self, background='blue')
-        gradesFrame.pack(expand=True)
+        
+ 
+        gradesFrame = tk.Frame(self)
+        gradesFrame.pack()        
+        
+        
+        lectureName = tk.Label(gradesFrame, text="Μάθημα")
+        lectureName.pack(pady=10, padx=10,side='left')
 
-        button = ttk.Button(self, text="Back to home",
+        lectureValue = tk.StringVar()
+        lectureEntry = tk.Entry(gradesFrame, text="none", textvariable=lectureValue)
+        lectureEntry.pack(pady=10, padx=10,side='left')
+        
+        semester = tk.Label(gradesFrame, text="Εξάμηνο")
+        semester.pack(pady=10, padx=10,side='left')
+
+        semesterValue = tk.IntVar()
+        semesterEntry = tk.Entry(gradesFrame, text="none",textvariable=semesterValue)
+        semesterEntry.pack(pady=10, padx=10,side='left')
+
+        lectureId = tk.Label(gradesFrame, text="ID Μαθήματος")
+        lectureId.pack(pady=10, padx=10,side='left')
+
+        lectureIdValue = tk.IntVar()
+        lectureIdEntry = tk.Entry(gradesFrame, text="none",textvariable=lectureIdValue)
+        lectureIdEntry.pack(pady=10, padx=10,side='left')
+
+        """
+        fetch lectures from db and display them in the tableview
+        return all lectures in list contained each in its own tuple        
+         like so [('Math', 1, 1233), ('Java', 1, 1244)]
+        """
+        x=db.fetchLectures() 
+        lectures = []
+        for i in x:
+            i= list(i)
+            i.pop(0)
+            i = tuple(i)
+            lectures.append(i)      
+        
+        
+        columns = [
+            {"text": "Μάθημα","stretch":False},
+            {"text": "Εξάμηνο","stretch":False},
+            {"text": "Κωδ. Μαθηματος","stretch":False}
+            
+        ]
+
+        row_data = lectures
+        
+        buttonsFrame = tk.Frame(self)
+        buttonsFrame.pack(padx=10, pady=10)
+
+        tree = Tableview(buttonsFrame,autoalign=True, coldata=columns, rowdata=row_data,paginated=True,autofit=False,searchable=True)
+        tree.pack(pady=10, padx=10,side='bottom')
+        # row = tree.tablerows
+        
+        def clearEntrys():
+            lectureEntry.delete(0, tk.END)
+            semesterEntry.delete(0, tk.END)
+            lectureIdEntry.delete(0, tk.END)
+            
+            
+
+        """
+        get selected lecture and its values from Tableview
+        see https://github.com/israel-dryer/ttkbootstrap/discussions/340
+        """
+        def selectItem(e):
+            curItem = tree.focus()
+            iid = tree.view.selection()
+            selectionValue = tree.view.item(iid,'values')
+            clearEntrys()
+            lectureEntry.insert(tk.END, selectionValue[0])
+            semesterEntry.insert(tk.END, selectionValue[1]) 
+            lectureIdEntry.insert(tk.END, selectionValue[2]) 
+            print (selectionValue)
+       
+        
+        tree.view.bind('<<TreeviewSelect>>', selectItem)
+        # tree.build_table_data() # insert table
+        # tree.load_table_data() #refresh table data
+
+        
+        
+
+        chooseStudent = ttk.Button(buttonsFrame, text="Εισαγωγή Επιλεγμένου Φοιτητή", command=lambda : labelChange(self))      
+        chooseStudent.pack(padx=10, pady=10, side='left')
+
+
+
+        insertLecture = ttk.Button(buttonsFrame,text="Εισαγωγή μαθήματος",
+                                   command= lambda : db.addLecture(lectureValue.get(),
+                                     semesterValue.get(),lectureIdValue.get()))
+        insertLecture.pack(padx=10, pady=10, side='left')
+
+
+        clearEntrysButton = ttk.Button(buttonsFrame,text="Απαλοιφή Πεδίων",bootstyle='danger',
+                                   command= lambda : clearEntrys())
+        clearEntrysButton.pack(padx=10, pady=10, side='left')
+
+        insertStudentsGrades = ttk.Button(buttonsFrame,text="Εισαγωγή Βαθμών",bootstyle='success',
+                                   command= lambda : print('ok'))
+        insertStudentsGrades.pack(padx=10, pady=10, side='left')
+
+
+
+
+
+
+        homebutton = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
-        button.pack(pady=10, padx=10)
-        button2 = ttk.Button(self, text="Go to page 1",
+        homebutton.pack(pady=10, padx=10)
+        backToStudentsButton = ttk.Button(self, text="Go to page 1",
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
-        button2.pack(pady=10, padx=10)
-        
-        
-        self.mathGrade = tk.IntVar()
-        self.mathLabel = ttk.Label(gradesFrame, text='Μαθηματικα')
-        self.mathLabel.grid(row=0,column=0, padx=10, pady=10)
-        self.mathEntry = tk.Entry(gradesFrame, textvariable= self.mathGrade)
-        self.mathEntry.grid(row=0,column=1,padx=10, pady=10)
+        backToStudentsButton.pack(pady=10, padx=10)
 
-        self.javaGrade = tk.IntVar()
-        self.javaLabel = ttk.Label(gradesFrame, text='Αντικειμενοστραφής Προγραμματισμός Ι')
-        self.javaLabel.grid(row=1,column=0,padx=10, pady=10)
-        self.javaEntry = tk.Entry(gradesFrame, textvariable= self.javaGrade)
-        self.javaEntry.grid(row=1,column=1,padx=10, pady=10)
-
-        self.c_Grade = tk.IntVar()
-        self.c_Label = ttk.Label(gradesFrame, text=' Προγραμματισμός Ι')
-        self.c_Label.grid(row=2,column=0,padx=10, pady=10)
-        self.c_Entry = tk.Entry(gradesFrame, textvariable=self.c_Grade)
-        self.c_Entry.grid(row=2,column=1,padx=10, pady=10)
-
-        self.macchineLearningGrade = tk.IntVar()
-        self.macchineLearningLabel = ttk.Label(gradesFrame, text=' Μηχανική Μάθηση')
-        self.macchineLearningLabel.grid(row=3,column=0,padx=10, pady=10)
-        self.macchineLearningEntry = tk.Entry(gradesFrame, textvariable=self.macchineLearningGrade)
-        self.macchineLearningEntry.grid(row=3,column=1,padx=10, pady=10)
-
-        button = ttk.Button(self, text="Εισαγωγή Φοιτητή",
-                            command=lambda:  labelChange(self, selected_item))
-        
-        button.pack()
-        
-        @staticmethod
-        def labelChange(self,selected_item):
-            name = selected_item[1] +' '+selected_item[2]
-            print (name)
-            self.insertGradesLabel.config(text = name)
         
 
+
+        def labelChange(self):
+
+            try:
+                name = selected_item[1] +' '+selected_item[2]
+                print (name)
+                self.insertGradesLabel.config(text = name)
+            
+            except NameError :
+                messagebox.showerror('Σφάλμα','Δεν έχει επιλεγεί κάποιος Φοιτητής. Η επιλογή φοιτητή ειναι υποχρεοτική για την εισαγωγή βαθμολογιών')
+        
+
+
+
+        
 class PageThree(tk.Frame):
      def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
