@@ -6,7 +6,7 @@ class Database:
         self.conn = sqlite3.connect(db)
         self.cur = self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY , name TEXT, lastname TEXT, serial INTEGER, university TEXT)")
-        self.cur.execute("CREATE TABLE IF NOT EXISTS lectures (id INTEGER PRIMARY KEY , lectureName TEXT, semester INTEGER)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS lectures (id INTEGER PRIMARY KEY , lectureName TEXT, semester INTEGER, serialTag INTEGER)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS grades (id INTEGER PRIMARY KEY , lectureID TEXT, studentID, grade INTEGER )")
 
         self.conn.commit()
@@ -67,13 +67,30 @@ class Database:
     def fetchLectures(self):
         self.cur.execute("SELECT * FROM lectures")
         rows = self.cur.fetchall()
-        print (rows)
+        for x in rows:
+            pass
         return rows
     
 
     def addLecture(self, lecture, semester, serialNumber):
         self.cur.execute("INSERT INTO lectures VALUES(NULL,?,?,?)", (lecture,semester, serialNumber))
         self.conn.commit()
+        self.fetchLectures()
+
+
+
+    def deleteLecture(self, id):
+        self.cur.execute("DELETE FROM lectures WHERE serialTag=?",(id,))
+        self.conn.commit()
+
+
 
     def __del__(self):
         self.conn.close()
+
+
+
+
+
+
+# db.addLecture('math', 2, 4556)

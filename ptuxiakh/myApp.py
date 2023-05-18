@@ -20,7 +20,7 @@ LargeFont  = ("serif", 12)
 
 
 
-db = Database('student.db')
+db = Database('students.db')
     
 
 
@@ -328,9 +328,9 @@ class PageTwo(PageOne):
         return all lectures in list contained each in its own tuple        
          like so [('Math', 1, 1233), ('Java', 1, 1244)]
         """
-        x=db.fetchLectures() 
+        a=db.fetchLectures() 
         lectures = []
-        for i in x:
+        for i in a:
             i= list(i)
             i.pop(0)
             i = tuple(i)
@@ -343,37 +343,72 @@ class PageTwo(PageOne):
             {"text": "Κωδ. Μαθηματος","stretch":False}
             
         ]
+        def showLecture():
+            
+            arr =[]
+            for x in db.fetchLectures():
+                x= list(x)
+                x.pop(0)
+                x=tuple(x)          
+                arr.append(x)
+                print(x)
+            return arr
+        
 
-        row_data = lectures
+        row_data = 1
         
         buttonsFrame = tk.Frame(self)
         buttonsFrame.pack(padx=10, pady=10)
 
-        tree = Tableview(buttonsFrame,autoalign=True, coldata=columns, rowdata=row_data,paginated=True,autofit=False,searchable=True)
+        
+        tree = Tableview(buttonsFrame,autoalign=True, coldata=columns, rowdata=showLecture(),paginated=True,autofit=False,searchable=True)
         tree.pack(pady=10, padx=10,side='bottom')
         # row = tree.tablerows
-        
+       
         def clearEntrys():
             lectureEntry.delete(0, tk.END)
             semesterEntry.delete(0, tk.END)
             lectureIdEntry.delete(0, tk.END)
-            
-            
-
+            showLecture()
         """
         get selected lecture and its values from Tableview
         see https://github.com/israel-dryer/ttkbootstrap/discussions/340
         """
         def selectItem(e):
-            curItem = tree.focus()
-            iid = tree.view.selection()
-            selectionValue = tree.view.item(iid,'values')
+            
+            iid = tree.view.selection() # get the item selected from table 
+            global selectionValue
+            selectionValue = tree.view.item(iid,'values') # get the values from the selection in a tuple
             clearEntrys()
             lectureEntry.insert(tk.END, selectionValue[0])
             semesterEntry.insert(tk.END, selectionValue[1]) 
             lectureIdEntry.insert(tk.END, selectionValue[2]) 
-            print (selectionValue)
+
+        def delLecture():
+            iid = tree.view.selection()
+            selectionValue 
+            db.deleteLecture(selectionValue[2])
+            tree.delete_rows(iids=iid)
+            
+        def tableReload():
+            tree.delete_rows() #clear all rows in Tableview
+            for x in db.fetchLectures(): #iterate through the tuples        
+               x= list(x) #make each of them a list 
+               x.pop(0) #remove the first item which is the row id from sqlite
+               x= tuple(x)#make each list a tuple again because Tableview accepts tuples as rows
+               
+               
+               tree.insert_row(tk.END, x)
+            
+           
+            tree.load_table_data(clear_filters=True)
+
+        def addL():
        
+            db.addLecture(lectureValue.get(),semesterValue.get(),lectureIdValue.get())
+            tableReload()
+            
+           
         
         tree.view.bind('<<TreeviewSelect>>', selectItem)
         # tree.build_table_data() # insert table
@@ -388,8 +423,7 @@ class PageTwo(PageOne):
 
 
         insertLecture = ttk.Button(buttonsFrame,text="Εισαγωγή μαθήματος",
-                                   command= lambda : db.addLecture(lectureValue.get(),
-                                     semesterValue.get(),lectureIdValue.get()))
+                                   command= lambda : addL())
         insertLecture.pack(padx=10, pady=10, side='left')
 
 
@@ -400,6 +434,10 @@ class PageTwo(PageOne):
         insertStudentsGrades = ttk.Button(buttonsFrame,text="Εισαγωγή Βαθμών",bootstyle='success',
                                    command= lambda : print('ok'))
         insertStudentsGrades.pack(padx=10, pady=10, side='left')
+
+        deleteLecture = ttk.Button(buttonsFrame,text="Διαγραφή Μαθήματος",bootstyle='dark',
+                                   command= lambda : delLecture())
+        deleteLecture.pack(padx=10, pady=10, side='left')
 
 
 
