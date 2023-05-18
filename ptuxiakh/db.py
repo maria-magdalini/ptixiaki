@@ -63,7 +63,9 @@ class Database:
         self.conn.commit()
         self.showStudents(student_list)
 
-
+    """
+    Lectures Functions------------------------------------
+    """
     def fetchLectures(self):
         self.cur.execute("SELECT * FROM lectures")
         rows = self.cur.fetchall()
@@ -84,6 +86,17 @@ class Database:
         self.conn.commit()
 
 
+
+
+    """
+    Grades Functions------------------------------------
+    """
+    def insertGrades(self, lectureID, studentSeriaTag, grade):
+        self.cur.execute("INSERT INTO grades VALUES(NULL,?,?,?)", (lectureID, studentSeriaTag,grade))
+        self.conn.commit()
+
+    def fetchGrades(self, studentSeriaTag):
+        self.cur.execute("SELECT name, lectureName, grade FROM grades,students,lectures WHERE grades.studentID=? == students.serial=?",(studentSeriaTag))
 
     def __del__(self):
         self.conn.close()
