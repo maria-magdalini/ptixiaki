@@ -29,11 +29,14 @@ class Database:
 
     def fetch(self):
         self.cur.execute("SELECT * FROM students")
-        rows = self.cur.fetchall()
-        
-            
+        rows = self.cur.fetchall()    
+        print (rows)
         return rows
-    
+        
+    def check_if_exists(self,name,lastname):
+        self.cur.execute("SELECT name FROM students WHERE name=? AND lastname=?", (name,lastname))
+        rows = self.cur.fetchall()
+        return rows
 
     def insert(self, lastname, firstname, serialtag,university):
         # self.checkEntrys(serialtag)
@@ -84,11 +87,24 @@ class Database:
         self.conn.commit()
 
 
+    def insertGrades(self, lectureID, studentSeriaTag, grade):
+        self.cur.execute("INSERT INTO grades VALUES(NULL,?,?,?)", (lectureID, studentSeriaTag,grade))
+        self.conn.commit()
+    
+    def fetchGrades(self):
+        self.cur.execute("SELECT * FROM grades")
+        rows = self.cur.fetchall()
+        print (rows)
 
     def __del__(self):
         self.conn.close()
 
 
+db = Database('students.db')
+
+# db.insertGrades()
+
+db.fetchGrades()
 
 
 

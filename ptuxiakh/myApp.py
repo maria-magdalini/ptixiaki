@@ -155,7 +155,7 @@ class PageOne(tk.Frame):
         studentUniversity = tk.StringVar()
         
 
-        button = ttk.Button(self, text="Καταχώρη Βαθμών",
+        button = ttk.Button(self, text="Καταχώρη Βαθμών Και Μαθημάτων",
                             command=lambda: controller.show_frame(PageTwo) ) #acts as a onClick event
         button.pack(side='bottom',pady=10, padx=10)
         studentsFrame = tk.Frame(self)
@@ -351,17 +351,23 @@ class PageTwo(PageOne):
                 x.pop(0)
                 x=tuple(x)          
                 arr.append(x)
-                print(x)
+                # print(x)
             return arr
         
 
-        row_data = 1
+         
         
         buttonsFrame = tk.Frame(self)
         buttonsFrame.pack(padx=10, pady=10)
 
+        studentFrame = tk.LabelFrame(self, text='Καταχώρηση Βαθμών', font=('serif',14))
+        studentFrame.pack(padx=10, pady=30)
+
         
-        tree = Tableview(buttonsFrame,autoalign=True, coldata=columns, rowdata=showLecture(),paginated=True,autofit=False,searchable=True)
+        tablaFrame = tk.Frame(self)
+        tablaFrame.pack(padx=10, pady=10)
+        
+        tree = Tableview(tablaFrame,autoalign=True, coldata=columns, rowdata=showLecture(),paginated=True,autofit=False,searchable=True)
         tree.pack(pady=10, padx=10,side='bottom')
         # row = tree.tablerows
        
@@ -383,14 +389,16 @@ class PageTwo(PageOne):
             lectureEntry.insert(tk.END, selectionValue[0])
             semesterEntry.insert(tk.END, selectionValue[1]) 
             lectureIdEntry.insert(tk.END, selectionValue[2]) 
+            lectureToGradeEntry.delete(0,tk.END)
+            lectureToGradeEntry.insert(tk.END, selectionValue[0])
 
-        def delLecture():
+        def delLecture(): # deletelecture
             iid = tree.view.selection()
             selectionValue 
             db.deleteLecture(selectionValue[2])
-            tree.delete_rows(iids=iid)
+            tree.delete_rows(iids=iid) # delete the row from table after deleting lecture
             
-        def tableReload():
+        def tableReload():# reload the table function
             tree.delete_rows() #clear all rows in Tableview
             for x in db.fetchLectures(): #iterate through the tuples        
                x= list(x) #make each of them a list 
@@ -403,7 +411,7 @@ class PageTwo(PageOne):
            
             tree.load_table_data(clear_filters=True)
 
-        def addL():
+        def addL():#add lecture in db function
        
             db.addLecture(lectureValue.get(),semesterValue.get(),lectureIdValue.get())
             tableReload()
@@ -420,29 +428,73 @@ class PageTwo(PageOne):
         chooseStudent = ttk.Button(buttonsFrame, text="Εισαγωγή Επιλεγμένου Φοιτητή", command=lambda : labelChange(self))      
         chooseStudent.pack(padx=10, pady=10, side='left')
 
-
-
         insertLecture = ttk.Button(buttonsFrame,text="Εισαγωγή μαθήματος",
                                    command= lambda : addL())
         insertLecture.pack(padx=10, pady=10, side='left')
-
 
         clearEntrysButton = ttk.Button(buttonsFrame,text="Απαλοιφή Πεδίων",bootstyle='danger',
                                    command= lambda : clearEntrys())
         clearEntrysButton.pack(padx=10, pady=10, side='left')
 
-        insertStudentsGrades = ttk.Button(buttonsFrame,text="Εισαγωγή Βαθμών",bootstyle='success',
-                                   command= lambda : print('ok'))
-        insertStudentsGrades.pack(padx=10, pady=10, side='left')
-
         deleteLecture = ttk.Button(buttonsFrame,text="Διαγραφή Μαθήματος",bootstyle='dark',
                                    command= lambda : delLecture())
         deleteLecture.pack(padx=10, pady=10, side='left')
 
+        student= tk.Label(studentFrame, text="Όνομα Φοιτητή")
+        student.pack(pady=10, padx=10,side='left')
 
+        studentValue = tk.StringVar()
+        studentEntry = tk.Entry(studentFrame, text="none", textvariable=studentValue, readonlybackground='YELLOW')
+        studentEntry.pack(pady=10, padx=10,side='left')
+        
+       
+        lectureToGrade = tk.Label(studentFrame, text="Μάθημα")
+        lectureToGrade.pack(pady=10, padx=10,side='left')
 
+        lectureToGradeValue = tk.StringVar()
+        lectureToGradeEntry = tk.Entry(studentFrame, width=40,textvariable=lectureToGradeValue)
+        lectureToGradeEntry.pack(pady=10, padx=10,side='left')
 
+        grade = tk.Label(studentFrame, text="Βαθμός Μαθήματος")
+        grade.pack(pady=10, padx=10,side='left')
 
+        gradeValue = tk.IntVar()
+        gradeEntry = tk.Entry(studentFrame, text="none",textvariable=gradeValue,width=2)
+        gradeEntry.pack(pady=10, padx=10,side='left')
+
+        insertGradesFrame = tk.Frame(studentFrame)
+        insertGradesFrame.pack(pady=10, padx=10,side='bottom')
+
+        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success', command=lambda: checkStudentEntry())
+        insertGrade.pack(pady=10, padx=10)
+
+      
+
+        def checkStudentEntry():
+            entry = studentValue.get()
+            if entry =='':
+                messagebox.showerror("Μη Έγκυρη Εντολή",
+                                     "Η Καταχώρηση Βαθμού δεν είναι δυνατή αν δεν επιλεγεί πρώτα καποιος φοιτητής.\nΕπιλέξτε πρώτα κάποιον φοιτητή και έπειτα πατήστε εισαγωγή ")
+
+            else:
+                name, lastname = entry.split()
+                result = db.check_if_exists(name, lastname)
+                if len(result) == 0 :
+                    
+                    messagebox.showerror('Error','Δεν υπάρχει αυτός ο φοιτητής')
+                else:
+                    db.insertGrades(lectureIdValue.get(),studentSeriaTag,gradeValue.get())
+                    messagebox.showinfo('Success',"Ολοκληρώθηκε επιτυχώς ")
+                print(len(result))
+
+        #define top level window for user to see students grades
+        def top():
+            popup = Toplevel(self)
+            homebutton = ttk.Button(popup, text="Back to home",
+                            command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
+            homebutton.pack(pady=10, padx=10)
+            popup.mainloop()
+               
 
         homebutton = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
@@ -451,17 +503,30 @@ class PageTwo(PageOne):
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
         backToStudentsButton.pack(pady=10, padx=10)
 
+        topLevelButton = ttk.Button(self, text="Εμφάνιση βαθμών φοιτητή",
+                            command=lambda: top() ) #acts as a onClick event
+        topLevelButton.pack(pady=10, padx=10)
+
         
 
 
         def labelChange(self):
+            global studentSeriaTag 
+             #am mathiti
 
             try:
-                name = selected_item[1] +' '+selected_item[2]
-                print (name)
+                studentSeriaTag = selected_item[3]
+                name = selected_item[1] +' '+selected_item[2] #onomateponumo
+                print (studentSeriaTag)
                 self.insertGradesLabel.config(text = name)
+                
+                if studentEntry.get() =='':
+                    studentEntry.insert(0,name)
+                else:
+                    messagebox.showinfo('Reminder', 'Έχετε εισάγει ήδη έναν φοιτητή')
             
             except NameError :
+
                 messagebox.showerror('Σφάλμα','Δεν έχει επιλεγεί κάποιος Φοιτητής. Η επιλογή φοιτητή ειναι υποχρεοτική για την εισαγωγή βαθμολογιών')
         
 
@@ -476,11 +541,11 @@ class PageThree(tk.Frame):
 
         button = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
-       
+        
 
         f= Figure(figsize=(10,4), dpi=100)
         a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
-        a.plot([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]) #X AXIS, Y AXIS FROM 0 TO 9 BOTH
+        a.bar([1,2,3,4,5,6,7,8,9,1],'height') #X AXIS, Y AXIS FROM 0 TO 9 BOTH
         """
         students grades will be ploted when returned from the db 
         """
