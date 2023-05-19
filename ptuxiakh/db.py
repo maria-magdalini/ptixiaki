@@ -94,7 +94,11 @@ class Database:
     def fetchGrades(self):
         self.cur.execute("SELECT * FROM grades")
         rows = self.cur.fetchall()
+        return rows
         print (rows)
+    
+    def deleteGrades(self):
+        self.cur.execute("DELETE FROM grades")
 
     def __del__(self):
         self.conn.close()
@@ -104,7 +108,7 @@ db = Database('students.db')
 
 # db.insertGrades()
 
-db.fetchGrades()
+
 
 
 

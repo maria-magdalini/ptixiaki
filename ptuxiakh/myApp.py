@@ -118,17 +118,13 @@ class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
          
-        label = ttk.Label(self, text="Καταχώρηση Φοιτητή", font=LargeFont)
+        label = ttk.Label(self, text="Διαχείριση Φοιτητή", font=LargeFont)
         label.pack(pady=10, padx=10)
 
-
-      
         """       
           we need to pass the event in the studentSelect function because we bind it to the listbox 
           
-        """     
-        
-                
+        """                     
         def clearInputs():
             self.studentNameEntry.delete(0,tk.END)
             self.studentLastNameEntry.delete(0,tk.END)
@@ -217,9 +213,6 @@ class PageOne(tk.Frame):
         
          
        
-                
-
-
 
     #create the list box wich the students are been displayed
         listFrame = ttk.Frame(self)
@@ -264,9 +257,6 @@ class PageOne(tk.Frame):
         semesterB =  IntVar()
       
         
-       
-        
-
     def insertStudent(self,studentName,studentLastName,studentUniversity,studentSerialTag):
         
         if studentName =='' or studentLastName=='' or studentUniversity=='' or studentSerialTag=='' :
@@ -409,13 +399,14 @@ class PageTwo(PageOne):
                tree.insert_row(tk.END, x)
             
            
-            tree.load_table_data(clear_filters=True)
+            tree.load_table_data()
 
         def addL():#add lecture in db function
-       
-            db.addLecture(lectureValue.get(),semesterValue.get(),lectureIdValue.get())
-            tableReload()
-            
+            try:
+                db.addLecture(lectureValue.get(),semesterValue.get(),lectureIdValue.get())
+                tableReload()
+            except:
+                messagebox.showerror('Error','Το ID και το εξάμηνο πρέπει να είναι αριθμός')
            
         
         tree.view.bind('<<TreeviewSelect>>', selectItem)
@@ -459,7 +450,7 @@ class PageTwo(PageOne):
         grade.pack(pady=10, padx=10,side='left')
 
         gradeValue = tk.IntVar()
-        gradeEntry = tk.Entry(studentFrame, text="none",textvariable=gradeValue,width=2)
+        gradeEntry = tk.Entry(studentFrame, text="none",textvariable=gradeValue,width=5)
         gradeEntry.pack(pady=10, padx=10,side='left')
 
         insertGradesFrame = tk.Frame(studentFrame)
@@ -485,14 +476,22 @@ class PageTwo(PageOne):
                 else:
                     db.insertGrades(lectureIdValue.get(),studentSeriaTag,gradeValue.get())
                     messagebox.showinfo('Success',"Ολοκληρώθηκε επιτυχώς ")
-                print(len(result))
+                
 
         #define top level window for user to see students grades
         def top():
             popup = Toplevel(self)
-            homebutton = ttk.Button(popup, text="Back to home",
-                            command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
-            homebutton.pack(pady=10, padx=10)
+            columns = [
+            {"text": "rid","stretch":True},
+            {"text": "Id Μαθήματος","stretch":True},
+            {"text": "Βαθμός","stretch":True}
+            ]
+
+            rows = db.fetchGrades()
+            name = tk.Label(popup,text=name)
+
+            studentsTree = Tableview(popup,autoalign=True, coldata=columns,rowdata=rows, paginated=True,autofit=False,searchable=True)
+            studentsTree.pack(pady=10, padx=10,side='bottom')
             popup.mainloop()
                
 
@@ -545,7 +544,7 @@ class PageThree(tk.Frame):
 
         f= Figure(figsize=(10,4), dpi=100)
         a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
-        a.bar([1,2,3,4,5,6,7,8,9,1],'height') #X AXIS, Y AXIS FROM 0 TO 9 BOTH
+        a.bar([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]) #X AXIS, Y AXIS FROM 0 TO 9 BOTH
         """
         students grades will be ploted when returned from the db 
         """
