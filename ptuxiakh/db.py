@@ -92,7 +92,7 @@ class Database:
         self.conn.commit()
     
     def fetchGrades(self):
-        self.cur.execute("SELECT * FROM grades")
+        self.cur.execute("SELECT lectureName,grade FROM lectures,grades")
         rows = self.cur.fetchall()
         return rows
         print (rows)
@@ -100,6 +100,11 @@ class Database:
     def deleteGrades(self):
         self.cur.execute("DELETE FROM grades")
 
+    def checkForLecture(self,lectureID):
+        self.cur.execute("SELECT lectureID FROM grades WHERE lectureID=?",(lectureID,))
+        rows = self.cur.fetchall()
+        return rows
+                         
     def __del__(self):
         self.conn.close()
 
@@ -110,7 +115,7 @@ db = Database('students.db')
 
 
 
-
+db.deleteGrades()
 
 
 # db.addLecture('math', 2, 4556)

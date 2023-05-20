@@ -14,6 +14,7 @@ import numpy as np
 db = Database
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
+from ttkbootstrap.constants import *
  
 
 LargeFont  = ("serif", 12)
@@ -118,7 +119,7 @@ class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
          
-        label = ttk.Label(self, text="Διαχείριση Φοιτητή", font=LargeFont)
+        label = ttk.Label(self, text="Διαχείριση Φοιτητών", font=LargeFont)
         label.pack(pady=10, padx=10)
 
         """       
@@ -435,7 +436,8 @@ class PageTwo(PageOne):
         student.pack(pady=10, padx=10,side='left')
 
         studentValue = tk.StringVar()
-        studentEntry = tk.Entry(studentFrame, text="none", textvariable=studentValue, readonlybackground='YELLOW')
+        #the value of the student will be updated by clicking the chooseStudent button automatically
+        studentEntry = tk.Entry(studentFrame, text="none", textvariable=studentValue,state='readonly')
         studentEntry.pack(pady=10, padx=10,side='left')
         
        
@@ -462,11 +464,14 @@ class PageTwo(PageOne):
       
 
         def checkStudentEntry():
+            hasBeenValued = checkForLecture()
+            print(hasBeenValued,)
             entry = studentValue.get()
             if entry =='':
                 messagebox.showerror("Μη Έγκυρη Εντολή",
                                      "Η Καταχώρηση Βαθμού δεν είναι δυνατή αν δεν επιλεγεί πρώτα καποιος φοιτητής.\nΕπιλέξτε πρώτα κάποιον φοιτητή και έπειτα πατήστε εισαγωγή ")
-
+            elif hasBeenValued>0:
+                 messagebox.showerror('Error','Το μάθημα αυτό έχει ήδη βαθμολογηθεί')
             else:
                 name, lastname = entry.split()
                 result = db.check_if_exists(name, lastname)
@@ -477,22 +482,61 @@ class PageTwo(PageOne):
                     db.insertGrades(lectureIdValue.get(),studentSeriaTag,gradeValue.get())
                     messagebox.showinfo('Success',"Ολοκληρώθηκε επιτυχώς ")
                 
+        def checkForLecture():
+            res = db.checkForLecture(lectureIdValue.get())          
+            return len(res)
 
         #define top level window for user to see students grades
         def top():
-            popup = Toplevel(self)
-            columns = [
-            {"text": "rid","stretch":True},
-            {"text": "Id Μαθήματος","stretch":True},
-            {"text": "Βαθμός","stretch":True}
-            ]
+            val = studentValue.get()
+            
+            try:
+                name, lastname = val.split()
+                res = db.check_if_exists(name,lastname)
+            except:
+                messagebox.showerror('Error','Δεν έχει επιλεγεί κάποιος φοιτητής')
+            print(res)
+            
+            if  val != '' and len(res)>0:
+                popup = Toplevel(self)
+                popup.wm_title(val +" AM: "+str(studentSeriaTag))
+                columns = [
+                
+                {"text": "Id Μαθήμα","stretch":True},
+                {"text": "Βαθμός","stretch":True}
+                
+                ]
 
-            rows = db.fetchGrades()
-            name = tk.Label(popup,text=name)
+                rows = db.fetchGrades()
+                name = tk.Label(popup,text=studentValue.get()+' '+"Βαθμοί Μαθημάτων")
+                name.pack()
 
-            studentsTree = Tableview(popup,autoalign=True, coldata=columns,rowdata=rows, paginated=True,autofit=False,searchable=True)
-            studentsTree.pack(pady=10, padx=10,side='bottom')
-            popup.mainloop()
+                studentsTree = Tableview(popup,autoalign=True, coldata=columns,rowdata=rows, paginated=True,autofit=False,searchable=True)
+                studentsTree.pack(pady=10, padx=10,side='bottom')
+
+                buttonsFrame = tk.Frame(popup)
+                buttonsFrame.pack(padx=10,pady=10)
+                meter = ttk.Meter(
+                    master=buttonsFrame,
+                    metersize=180,
+                    padding=5,
+                    amounttotal=10,
+                    amountused=7.2,
+                    metertype="full",
+                    subtext="M.O",
+                    interactive=False,
+                                         )
+                meter.pack()
+
+
+                homebutton = ttk.Button(buttonsFrame, text="",
+                            command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
+                homebutton.pack(pady=10, padx=10)
+
+                popup.mainloop()
+
+            else:
+                messagebox.showerror('Error','Δεν έχει επιλεγεί κάποιος φοιτητής')
                
 
         homebutton = ttk.Button(self, text="Back to home",
@@ -516,6 +560,9 @@ class PageTwo(PageOne):
             try:
                 studentSeriaTag = selected_item[3]
                 name = selected_item[1] +' '+selected_item[2] #onomateponumo
+                studentValue.set(name)
+                # update the value of the student Entry based on the selection he made in the table 
+                #prevents the user from typing nonsense
                 print (studentSeriaTag)
                 self.insertGradesLabel.config(text = name)
                 
