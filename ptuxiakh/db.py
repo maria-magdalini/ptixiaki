@@ -91,20 +91,41 @@ class Database:
         self.cur.execute("INSERT INTO grades VALUES(NULL,?,?,?)", (lectureID, studentSeriaTag,grade))
         self.conn.commit()
     
-    def fetchGrades(self):
-        self.cur.execute("SELECT lectureName,grade FROM lectures,grades")
+    def fetchGrades(self,studentSeriaTag):
+        self.cur.execute("SELECT lectureName,grade,lectureID FROM lectures,grades WHERE studentID=? AND grades.lectureID = lectures.serialTag",(studentSeriaTag,))
         rows = self.cur.fetchall()
-        return rows
+        
         print (rows)
-    
+        return rows
     def deleteGrades(self):
         self.cur.execute("DELETE FROM grades")
 
-    def checkForLecture(self,lectureID):
-        self.cur.execute("SELECT lectureID FROM grades WHERE lectureID=?",(lectureID,))
+    def checkForLecture(self,lectureID,serialTag):
+        self.cur.execute("SELECT lectureID FROM grades WHERE lectureID=? AND studentID=?",(lectureID,serialTag))
         rows = self.cur.fetchall()
         return rows
-                         
+   
+    def mesosOros(self,studentID):
+        self.cur.execute("SELECT AVG(grade) FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
+        # self.cur.execute("SELECT COUNT(grade),lectureID FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
+        # self.cur.execute("SELECT AVG(grade) FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
+        row =self.cur.fetchone()
+        row  = round(row[0],2)
+        print(row)
+        return row
+    
+    def updateGrade(self,grade,lectureID,studentID):
+        self.cur.execute("UPDATE grades SET grade=? WHERE lectureID =? AND studentID=? ",(grade,lectureID,studentID)) 
+    
+    def lecttureSum_Pass(self,studentID):
+        self.cur.execute("SELECT COUNT(grade) FROM grades WHERE studentID=? ",(studentID,))
+        allLectures = self.cur.fetchone()
+        self.cur.execute("SELECT COUNT(grade) FROM grades WHERE studentID=? AND grade >= 5 ",(studentID,))
+        passed = self.cur.fetchone()
+       
+        res = [allLectures,passed]
+        return res
+
     def __del__(self):
         self.conn.close()
 
@@ -112,10 +133,10 @@ class Database:
 db = Database('students.db')
 
 # db.insertGrades()
+# res = db.mesosOros(6655)
+# print(res)
+# db.fetchGrades(7889)
 
-
-
-db.deleteGrades()
 
 
 # db.addLecture('math', 2, 4556)

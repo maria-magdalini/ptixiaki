@@ -224,7 +224,7 @@ class PageOne(tk.Frame):
         #we need to pass the event in the studentSelect function because we bind it to the listbox 
         self.student_list.bind('<<ListboxSelect>>', self.studentSelect) 
         
-        self.scrollBar = Scrollbar(listFrame, width=10)
+        self.scrollBar = ttk.Scrollbar(listFrame, bootstyle="secondary-round")
         self.scrollBar.pack(side='left',fill='y')
         
         
@@ -451,23 +451,27 @@ class PageTwo(PageOne):
         grade = tk.Label(studentFrame, text="Βαθμός Μαθήματος")
         grade.pack(pady=10, padx=10,side='left')
 
-        gradeValue = tk.IntVar()
+        gradeValue = DoubleVar()
         gradeEntry = tk.Entry(studentFrame, text="none",textvariable=gradeValue,width=5)
         gradeEntry.pack(pady=10, padx=10,side='left')
 
         insertGradesFrame = tk.Frame(studentFrame)
         insertGradesFrame.pack(pady=10, padx=10,side='bottom')
 
-        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success', command=lambda: checkStudentEntry())
+        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success-outline', command=lambda: checkStudentEntry())
         insertGrade.pack(pady=10, padx=10)
 
       
 
         def checkStudentEntry():
-            hasBeenValued = checkForLecture()
+            try:
+                hasBeenValued = checkForLecture(studentSeriaTag)
+            except:
+                messagebox.showerror("Μη Έγκυρη Εντολή",
+                                     "Η Καταχώρηση Βαθμού δεν είναι δυνατή αν δεν επιλεγεί πρώτα καποιος φοιτητής.\nΕπιλέξτε πρώτα κάποιον φοιτητή και έπειτα πατήστε εισαγωγή ")
             print(hasBeenValued,)
             entry = studentValue.get()
-            if entry =='':
+            if entry == '':
                 messagebox.showerror("Μη Έγκυρη Εντολή",
                                      "Η Καταχώρηση Βαθμού δεν είναι δυνατή αν δεν επιλεγεί πρώτα καποιος φοιτητής.\nΕπιλέξτε πρώτα κάποιον φοιτητή και έπειτα πατήστε εισαγωγή ")
             elif hasBeenValued>0:
@@ -482,8 +486,8 @@ class PageTwo(PageOne):
                     db.insertGrades(lectureIdValue.get(),studentSeriaTag,gradeValue.get())
                     messagebox.showinfo('Success',"Ολοκληρώθηκε επιτυχώς ")
                 
-        def checkForLecture():
-            res = db.checkForLecture(lectureIdValue.get())          
+        def checkForLecture(studentSeriaTag):
+            res = db.checkForLecture(lectureIdValue.get(),studentSeriaTag)          
             return len(res)
 
         #define top level window for user to see students grades
@@ -502,18 +506,35 @@ class PageTwo(PageOne):
                 popup.wm_title(val +" AM: "+str(studentSeriaTag))
                 columns = [
                 
-                {"text": "Id Μαθήμα","stretch":True},
-                {"text": "Βαθμός","stretch":True}
+                {"text": "Μαθήμα","stretch":True},
+                {"text": "Βαθμός","stretch":True},
+                {"text": "ID Μαθήματος","stretch":True}
                 
                 ]
 
-                rows = db.fetchGrades()
-                name = tk.Label(popup,text=studentValue.get()+' '+"Βαθμοί Μαθημάτων")
+                rows = db.fetchGrades(studentSeriaTag)
+                name = tk.Label(popup,text="Βαθμοί Μαθημάτων")
                 name.pack()
 
-                studentsTree = Tableview(popup,autoalign=True, coldata=columns,rowdata=rows, paginated=True,autofit=False,searchable=True)
-                studentsTree.pack(pady=10, padx=10,side='bottom')
+                def selectLecute(e):
+            
+                    iid = studentsTree.view.selection() # get the item selected from table 
+                    global lecture
+                    lecture = studentsTree.view.item(iid,'values')
+                    print(lecture[0]) # get the values from the selection in a tuple
+                    # clearEntrys()
+                    studentsLecture.configure(text=lecture[0]) 
+                    studentsLectureEntry.delete(0,tk.END)   
+                    studentsLectureEntry.insert(tk.END,lecture[1])
 
+                studentsTree = Tableview(popup,autoalign=True, coldata=columns,rowdata=rows, paginated=True,autofit=False,searchable=True)
+                studentsTree.pack(pady=10, padx=10)
+
+                def updateMO(studentSeriaTag):
+                    row = db.mesosOros(studentSeriaTag)
+                    return row
+                        
+                studentsTree.view.bind('<<TreeviewSelect>>', selectLecute)
                 buttonsFrame = tk.Frame(popup)
                 buttonsFrame.pack(padx=10,pady=10)
                 meter = ttk.Meter(
@@ -521,18 +542,52 @@ class PageTwo(PageOne):
                     metersize=180,
                     padding=5,
                     amounttotal=10,
-                    amountused=7.2,
+                    amountused=updateMO(studentSeriaTag),
                     metertype="full",
                     subtext="M.O",
+                    bootstyle='warning',
                     interactive=False,
                                          )
                 meter.pack()
 
+                lecturesSumFrame = tk.Frame(buttonsFrame)
+                lecturesSumFrame.pack(padx=10,pady=20)
 
-                homebutton = ttk.Button(buttonsFrame, text="",
-                            command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
-                homebutton.pack(pady=10, padx=10)
+                lecturesSummary = tk.Label(lecturesSumFrame,text="Σύνολο Μαθημάτων: -\nΣύνολο Περασμενων Μαθημάτων: -" )
+                lecturesSummary.pack(pady=20)
 
+                def lectureUpdate(studentSeriaTag):
+                    res = db.lecttureSum_Pass(studentSeriaTag)#returns a list of tuples
+                    lecturesSummary.configure(text=f"Σύνολο Μαθημάτων: {res[0][0]}\nΣύνολο Περασμενων Μαθημάτων: {res[1][0]}")
+                lectureUpdate(studentSeriaTag)
+                updateGradesFrame = tk.Frame(buttonsFrame)
+                updateGradesFrame.pack(padx=10,pady=10)
+                studentsLecture = ttk.Label(updateGradesFrame, text=selectionValue[0] )
+                studentsLecture.pack(pady=10, padx=10, side='left')
+
+                studentsLectureValue = tk.DoubleVar()
+                studentsLectureEntry= tk.Entry(updateGradesFrame, textvariable=studentsLectureValue)
+                studentsLectureEntry.pack(pady=10, padx=10, side='left')
+                
+                
+
+                homebutton = ttk.Button(updateGradesFrame, text="Αναβαθμολόγηση μαθήματος ",
+                            command= lambda: reloadLectures(studentsLectureValue.get(),lecture[2],studentSeriaTag), bootstyle='outline-warning' ) #acts as a onClick event
+                homebutton.pack(pady=10, padx=10, side='left')
+                
+                def reloadLectures(lecture, lectureID, studentSeriaTag):
+                    db.updateGrade(lecture,lectureID,studentSeriaTag)
+                    db.mesosOros(studentSeriaTag)
+                    
+                    studentsTree.delete_rows()
+                    for lecture in db.fetchGrades(studentSeriaTag):
+                        studentsTree.insert_row(tk.END,lecture)
+                    studentsTree.load_table_data()
+                    meter.amountusedvar.set(db.mesosOros(studentSeriaTag))
+                    lectureUpdate(studentSeriaTag)
+
+                
+               
                 popup.mainloop()
 
             else:
@@ -540,14 +595,14 @@ class PageTwo(PageOne):
                
 
         homebutton = ttk.Button(self, text="Back to home",
-                            command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
+                            command=lambda: controller.show_frame(StartPage), underline=0 ) #acts as a onClick event
         homebutton.pack(pady=10, padx=10)
-        backToStudentsButton = ttk.Button(self, text="Go to page 1",
+        backToStudentsButton = ttk.Button(self, text="Διαχείρηση Φοιτητών",
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
         backToStudentsButton.pack(pady=10, padx=10)
 
         topLevelButton = ttk.Button(self, text="Εμφάνιση βαθμών φοιτητή",
-                            command=lambda: top() ) #acts as a onClick event
+                            command=lambda: top(), bootstyle= "outline" ) #acts as a onClick event
         topLevelButton.pack(pady=10, padx=10)
 
         
@@ -566,8 +621,9 @@ class PageTwo(PageOne):
                 print (studentSeriaTag)
                 self.insertGradesLabel.config(text = name)
                 
-                if studentEntry.get() =='':
+                if studentEntry.get() =='' or studentEntry.get() != name:
                     studentEntry.insert(0,name)
+            
                 else:
                     messagebox.showinfo('Reminder', 'Έχετε εισάγει ήδη έναν φοιτητή')
             
