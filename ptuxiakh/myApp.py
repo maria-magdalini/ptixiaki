@@ -6,6 +6,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+import matplotlib.pyplot as mplt
 import matplotlib as plt
 plt.use('TkAgg')
 import sqlite3
@@ -635,7 +636,7 @@ class PageTwo(PageOne):
 
 
         
-class PageThree(tk.Frame):
+class PageThree(PageTwo):
      def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="Graphs", font=LargeFont)
@@ -646,15 +647,28 @@ class PageThree(tk.Frame):
         
 
         f= Figure(figsize=(10,4), dpi=100)
+        s=Figure(figsize=(10,4), dpi=100)
         a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
         a.bar([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]) #X AXIS, Y AXIS FROM 0 TO 9 BOTH
         """
         students grades will be ploted when returned from the db 
         """
+       
         canvas = FigureCanvasTkAgg(f, master=self) #creating canvas
         canvas.draw() #drawing canvas
         canvas.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
-        
+        y = [5,6,3,8]
+        x = ['java','javascript','python','php']
+        mplt.barh(x,y,color='green')
+        mplt.show()
+
+
+        lol = FigureCanvasTkAgg(s, master=self) #creating canvas
+        lol.draw() #drawing canvas
+        lol.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
+        lol._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
+
+
         toobar = NavigationToolbar2Tk(canvas, self) # creating navigation
         toobar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
