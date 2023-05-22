@@ -16,7 +16,8 @@ db = Database
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
 from ttkbootstrap.constants import *
- 
+import matplotlib.ticker as ticker
+from PIL import ImageTk, Image
 
 LargeFont  = ("serif", 12)
 
@@ -41,7 +42,7 @@ class App(tk.Tk):
         self.frames = {
 
         }
-        for F in (StartPage, PageOne,PageTwo,PageThree):
+        for F in (StartPage, PageOne,PageTwo):
             """
             we need to pass the self argument second because it is the App class
             witch it has showframe function and we give access to the ather pages
@@ -71,30 +72,21 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         #passing the parent in the StartPage like this (tk.Frame(App))
         #its like: frame(App) -> the frame is hosted in the Parent witch is App
-        tk.Frame.__init__(self,parent)
-        print(tk.Frame,type(parent))
-        self.frame(controller)
+        tk.Frame.__init__(self,parent,height=700,width=700)
        
-
-    def frame(self,controller):         
-        label = tk.Label(self, text="Start Page", font=LargeFont)
+    
+        label = tk.Label(self, text="Διαχειριστικό Σύστημα Φοιτητών\nΠανεπιστήμιο Θεσσαλίας", font=LargeFont)
         label.pack(pady=10, padx=10)
 
-        button = ttk.Button(self, text="Go to page 1",
+        button = ttk.Button(self, text="Διαχείριση Φοιτητών",
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
         button.pack(pady=10, padx=10)
 
-        button2 = ttk.Button(self, text="Go to page 2",
-                            command=lambda: controller.show_frame(PageTwo) ) #acts as a onClick event
-        button2.pack(pady=10, padx=10)
-        button3 = ttk.Button(self, text="Go to Graphs",
-                            command=lambda: controller.show_frame(PageThree) ) #acts as a onClick event
-        button3.pack(pady=10, padx=10)
-
+       
 
     
 class PageOne(tk.Frame):
-   
+    
     def studentSelect(self, event):
             global selected_item
             selected_item = self.student_list.get(ANCHOR)
@@ -103,6 +95,7 @@ class PageOne(tk.Frame):
             if len(selected_item) == 0:
                 pass
             else:
+                # PageThree.main(PageThree,selected_item[3])
                 self.studentNameEntry.delete(0,tk.END)
                 self.studentLastNameEntry.delete(0,tk.END)
                 self.studentUniversityEntry.delete(0,tk.END)
@@ -122,6 +115,7 @@ class PageOne(tk.Frame):
          
         label = ttk.Label(self, text="Διαχείριση Φοιτητών", font=LargeFont)
         label.pack(pady=10, padx=10)
+        
 
         """       
           we need to pass the event in the studentSelect function because we bind it to the listbox 
@@ -149,9 +143,11 @@ class PageOne(tk.Frame):
         
         studentName = tk.StringVar()
         studentLastName = tk.StringVar()
+        global studentSerialTag
         studentSerialTag = tk.IntVar()
         studentUniversity = tk.StringVar()
-        
+
+       
 
         button = ttk.Button(self, text="Καταχώρη Βαθμών Και Μαθημάτων",
                             command=lambda: controller.show_frame(PageTwo) ) #acts as a onClick event
@@ -237,7 +233,7 @@ class PageOne(tk.Frame):
         buttonsFrame.pack(padx=10, pady=10,)
        
 
-
+        db.showStudents(self.student_list)
         showStudentButton = ttk.Button(buttonsFrame, text="Εμφάνιση Φοιτητών", command=lambda: db.showStudents(self.student_list))
         showStudentButton.pack(pady=10, padx=10,side='left')
     #button to add a new user in the database  
@@ -255,9 +251,6 @@ class PageOne(tk.Frame):
         updateButton.pack(pady=10, padx=10, side='left')
       
 
-        semesterA =  IntVar()
-        semesterB =  IntVar()
-      
         
     def insertStudent(self,studentName,studentLastName,studentUniversity,studentSerialTag):
         
@@ -285,7 +278,7 @@ class PageTwo(PageOne):
         tk.Frame.__init__(self, parent)
         
         
-        self.insertGradesLabel = ttk.Label(self, text="Καταχώρηση Βαθμών Φοιτητή", font=LargeFont)
+        self.insertGradesLabel = ttk.Label(self, text="Μαθήματα και Βαθμολογίες", font=LargeFont)
         self.insertGradesLabel.pack(pady=10, padx=10)
 
         
@@ -459,7 +452,7 @@ class PageTwo(PageOne):
         insertGradesFrame = tk.Frame(studentFrame)
         insertGradesFrame.pack(pady=10, padx=10,side='bottom')
 
-        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success-outline', command=lambda: checkStudentEntry())
+        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success', command=lambda: checkStudentEntry())
         insertGrade.pack(pady=10, padx=10)
 
       
@@ -573,9 +566,48 @@ class PageTwo(PageOne):
                 
 
                 homebutton = ttk.Button(updateGradesFrame, text="Αναβαθμολόγηση μαθήματος ",
-                            command= lambda: reloadLectures(studentsLectureValue.get(),lecture[2],studentSeriaTag), bootstyle='outline-warning' ) #acts as a onClick event
+                            command= lambda: reloadLectures(studentsLectureValue.get(),lecture[2],studentSeriaTag), bootstyle='outline-dark' ) #acts as a onClick event
                 homebutton.pack(pady=10, padx=10, side='left')
                 
+                def graphs():
+                    root = Toplevel()
+                    root.wm_title(val +" AM: "+str(studentSeriaTag))
+                    f= Figure(figsize=(10,4), dpi=100)        
+                    a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
+                    #X AXIS, Y AXIS FROM 0 TO 9 BOTH
+                
+                
+                    res=db.fetchGrades(studentSeriaTag)
+                    print(res)
+                    y = []
+
+                    x = []
+
+                    for i in res:
+
+                        i = list(i)
+                        i.pop(-1)
+                        x.append(i[0])
+                        y.append(i[1])
+                    
+                    a.bar(x,y,width=0.3, color='#ffbb33')
+                    
+                    a.set_ylim(0,10) # set the y range to 0-10
+                    a.set_ylabel('Βαθμοί Μαθημάτων')
+                    a.set_xlabel('Μαθήματα')
+                    a.yaxis.set_major_locator(ticker.MultipleLocator(1)) #set the steps of ticker in y axis to 1
+                    canvas = FigureCanvasTkAgg(f, master=root) #creating canvas
+                    canvas.draw() #drawing canvas
+                    canvas.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
+
+                    toobar = NavigationToolbar2Tk(canvas,root) # creating navigation
+                    toobar.update()
+                    canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas`
+
+                    root.mainloop()
+                homebutton = ttk.Button(updateGradesFrame, text="Γραφική Απεικόνιση Βαθμών ",bootstyle='outline-dark',
+                            command=  graphs ) #acts as a onClick event
+                homebutton.pack(pady=10, padx=10, side='left')
                 def reloadLectures(lecture, lectureID, studentSeriaTag):
                     db.updateGrade(lecture,lectureID,studentSeriaTag)
                     db.mesosOros(studentSeriaTag)
@@ -588,16 +620,21 @@ class PageTwo(PageOne):
                     lectureUpdate(studentSeriaTag)
 
                 
+                
                
                 popup.mainloop()
 
             else:
                 messagebox.showerror('Error','Δεν έχει επιλεγεί κάποιος φοιτητής')
                
+        
 
         homebutton = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage), underline=0 ) #acts as a onClick event
         homebutton.pack(pady=10, padx=10)
+
+        
+
         backToStudentsButton = ttk.Button(self, text="Διαχείρηση Φοιτητών",
                             command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
         backToStudentsButton.pack(pady=10, padx=10)
@@ -620,7 +657,7 @@ class PageTwo(PageOne):
                 # update the value of the student Entry based on the selection he made in the table 
                 #prevents the user from typing nonsense
                 print (studentSeriaTag)
-                self.insertGradesLabel.config(text = name)
+                # self.insertGradesLabel.config(text = name)
                 
                 if studentEntry.get() =='' or studentEntry.get() != name:
                     studentEntry.insert(0,name)
@@ -633,46 +670,58 @@ class PageTwo(PageOne):
                 messagebox.showerror('Σφάλμα','Δεν έχει επιλεγεί κάποιος Φοιτητής. Η επιλογή φοιτητή ειναι υποχρεοτική για την εισαγωγή βαθμολογιών')
         
 
-
-
-        
-class PageThree(PageTwo):
-     def __init__(self, parent, controller):
+class PageThree(tk.Frame):
+    def __init__(self, parent, controller):
+       
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="Graphs", font=LargeFont)
         label.pack(pady=10, padx=10)
 
         button = ttk.Button(self, text="Back to home",
                             command=lambda: controller.show_frame(StartPage) ) #acts as a onClick event
-        
-
-        f= Figure(figsize=(10,4), dpi=100)
-        s=Figure(figsize=(10,4), dpi=100)
-        a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
-        a.bar([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]) #X AXIS, Y AXIS FROM 0 TO 9 BOTH
+        button.pack(pady=10, padx=10)
+      
         """
         students grades will be ploted when returned from the db 
+           if studentSerialTag==0:
+            pass
+        else:
+            print(str(studentSerialTag)+'got student serial')
+            f= Figure(figsize=(10,4), dpi=100)        
+            a = f.add_subplot(111)  #1X1 CHART , CHART NO 1 -> (111)
+            #X AXIS, Y AXIS FROM 0 TO 9 BOTH
+        
+           
+            res=db.fetchGrades(studentSerialTag)
+            print(res)
+            y = []
+
+            x = []
+
+            for i in res:
+
+                i = list(i)
+                i.pop(-1)
+                x.append(i[0])
+                y.append(i[1])
+            
+            a.bar(x,y)
+            canvas = FigureCanvasTkAgg(f, master=self) #creating canvas
+            canvas.draw() #drawing canvas
+            canvas.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
+
+            toobar = NavigationToolbar2Tk(canvas, self) # creating navigation
+            toobar.update()
+            canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
         """
+     
+            
+    def serialValue(value,self):
+        print(value,self)
+        self.main(self,value)
+        
+        
        
-        canvas = FigureCanvasTkAgg(f, master=self) #creating canvas
-        canvas.draw() #drawing canvas
-        canvas.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
-        y = [5,6,3,8]
-        x = ['java','javascript','python','php']
-        mplt.barh(x,y,color='green')
-        mplt.show()
-
-
-        lol = FigureCanvasTkAgg(s, master=self) #creating canvas
-        lol.draw() #drawing canvas
-        lol.get_tk_widget().pack(side=tk.TOP, fill='both', expand=True)#packing canvas to frame
-        lol._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
-
-
-        toobar = NavigationToolbar2Tk(canvas, self) # creating navigation
-        toobar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas
-        button.pack(pady=10, padx=10)
         
 
 
