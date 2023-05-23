@@ -108,6 +108,8 @@ class PageOne(tk.Frame):
                 self.studentLastNameEntry.insert(tk.END,selected_item[2]),
                 self.studentUniversityEntry.insert(tk.END,selected_item[4]),
                 self.studentSerialTagEntry.insert(tk.END,selected_item[3])
+                
+                print(selected_item[3])
 
             return selected_item
 
@@ -248,7 +250,7 @@ class PageOne(tk.Frame):
         
    
         updateButton=  ttk.Button ( buttonsFrame, text="Ανανέωση Στοιχείων", command= lambda : db.update(selected_item[0],studentName.get(), studentLastName.get(), 
-                    studentUniversity.get(), studentSerialTag.get(), self.student_list))
+                    studentUniversity.get(), studentSerialTag.get(), self.student_list, selected_item[3]))
         updateButton.pack(pady=10, padx=10, side='left')
       
 

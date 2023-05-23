@@ -59,10 +59,12 @@ class Database:
         self.cur.execute("DELETE FROM students WHERE id=?", (id,))
         self.conn.commit()
 
-    def update(self,id , firstname,lastname, university, serialtag,student_list):
+    def update(self,id , firstname,lastname, university, serialtag,student_list,oldStudentsSerial):
      
 
         self.cur.execute("UPDATE students SET lastname = ?, name = ?, university = ?, serial = ? WHERE id=?", (lastname, firstname, university,serialtag,id))
+      
+        self.cur.execute("UPDATE grades SET studentID = ? WHERE studentID=?",(serialtag,oldStudentsSerial))
         self.conn.commit()
         self.showStudents(student_list)
 
@@ -79,7 +81,7 @@ class Database:
         # print(rows)
         return rows
 
-
+    
     def addLecture(self, lecture, semester, serialNumber):
 
         res = self.check_if_lecture_exists(serialNumber)
@@ -101,8 +103,11 @@ class Database:
 
 
     def insertGrades(self, lectureID, studentSeriaTag, grade):
-        self.cur.execute("INSERT INTO grades VALUES(NULL,?,?,?)", (lectureID, studentSeriaTag,grade))
-        self.conn.commit()
+        if grade > 10 or grade <0:
+            return messagebox.showinfo('Error', 'Ο Βαθμός του μαθήματος πρένει να είναι απο 0 έως 10.')
+        else:
+            self.cur.execute("INSERT INTO grades VALUES(NULL,?,?,?)", (lectureID, studentSeriaTag,grade))
+            self.conn.commit()
     
     def fetchGrades(self,studentSeriaTag):
         self.cur.execute("SELECT lectureName,grade,lectureID FROM lectures,grades WHERE studentID=? AND grades.lectureID = lectures.serialTag",(studentSeriaTag,))
