@@ -629,10 +629,6 @@ class PageTwo(PageOne):
                
         
 
-        homebutton = ttk.Button(self, text="Back to home",
-                            command=lambda: controller.show_frame(StartPage), underline=0 ) #acts as a onClick event
-        homebutton.pack(pady=10, padx=10)
-
         
 
         backToStudentsButton = ttk.Button(self, text="Διαχείρηση Φοιτητών",
