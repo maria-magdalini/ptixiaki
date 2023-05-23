@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk as table
 from tkinter import *
+from tkinter import messagebox
 from tkinter import ANCHOR # gets the selected item in the listbox
 import ttkbootstrap as ttk
-from tkinter import messagebox
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import matplotlib.pyplot as mplt
@@ -129,7 +130,7 @@ class PageOne(tk.Frame):
 
         def delete_student():
             warning =  messagebox.askquestion('Οριστική Διαγραφη Μαθητή', 'Θέλετε να διαγράψετε οριστικά αυτόν τον Μαθητή')
-
+            
             if warning =='no':
                 pass
             else:
@@ -403,7 +404,7 @@ class PageTwo(PageOne):
             except:
                 messagebox.showerror('Error','Το ID και το εξάμηνο πρέπει να είναι αριθμός')
            
-        
+            
         tree.view.bind('<<TreeviewSelect>>', selectItem)
         # tree.build_table_data() # insert table
         # tree.load_table_data() #refresh table data

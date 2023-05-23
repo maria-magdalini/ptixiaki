@@ -15,7 +15,7 @@ class Database:
             
         student_list.delete(0, tk.END)
         for student in self.fetch():
-            print(student)    
+            # print(student)    
             student_list.insert(tk.END, student)
         # print the entries in the console 
 
@@ -30,7 +30,7 @@ class Database:
     def fetch(self):
         self.cur.execute("SELECT * FROM students")
         rows = self.cur.fetchall()    
-        print (rows)
+        # print (rows)
         return rows
         
     def check_if_exists(self,name,lastname):
@@ -70,20 +70,33 @@ class Database:
     def fetchLectures(self):
         self.cur.execute("SELECT * FROM lectures")
         rows = self.cur.fetchall()
-        for x in rows:
-            pass
+        
         return rows
     
+    def check_if_lecture_exists(self,lectureID):
+        self.cur.execute("SELECT * FROM lectures WHERE serialTag=?",(lectureID,))
+        rows = self.cur.fetchall()
+        # print(rows)
+        return rows
+
 
     def addLecture(self, lecture, semester, serialNumber):
-        self.cur.execute("INSERT INTO lectures VALUES(NULL,?,?,?)", (lecture,semester, serialNumber))
-        self.conn.commit()
-        self.fetchLectures()
 
+        res = self.check_if_lecture_exists(serialNumber)
+        if len(res)>0:
+            return messagebox.showerror('Error', 'Υπάρχει άλλο μάθημα με αυτό το αναγνωριστικό ID')
+        else:
+            self.cur.execute("INSERT INTO lectures VALUES(NULL,?,?,?)", (lecture,semester, serialNumber))
+            self.conn.commit()
+            self.fetchLectures()
 
+    def delLectrueFromGrades(self,serial):
+        self.cur.execute("DELETE FROM grades WHERE lectureId=?", (serial,))
+        self.conn.commit()   
 
     def deleteLecture(self, id):
-        self.cur.execute("DELETE FROM lectures WHERE serialTag=?",(id,))
+        self.delLectrueFromGrades(id)
+        self.cur.execute("DELETE FROM lectures WHERE serialTag=?", (id,))
         self.conn.commit()
 
 
@@ -93,9 +106,8 @@ class Database:
     
     def fetchGrades(self,studentSeriaTag):
         self.cur.execute("SELECT lectureName,grade,lectureID FROM lectures,grades WHERE studentID=? AND grades.lectureID = lectures.serialTag",(studentSeriaTag,))
-        rows = self.cur.fetchall()
-        
-        print (rows)
+        rows = self.cur.fetchall()     
+        # print (rows)
         return rows
     def deleteGrades(self):
         self.cur.execute("DELETE FROM grades")
@@ -107,16 +119,15 @@ class Database:
    
     def mesosOros(self,studentID):
         self.cur.execute("SELECT AVG(grade) FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
-        # self.cur.execute("SELECT COUNT(grade),lectureID FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
-        # self.cur.execute("SELECT AVG(grade) FROM grades WHERE studentID=? AND grade >= 5",(studentID,))
         row =self.cur.fetchone()
         row  = round(row[0],2)
-        print(row)
+        # print(row)
         return row
     
     def updateGrade(self,grade,lectureID,studentID):
         self.cur.execute("UPDATE grades SET grade=? WHERE lectureID =? AND studentID=? ",(grade,lectureID,studentID)) 
-    
+        self.conn.commit()
+
     def lecttureSum_Pass(self,studentID):
         self.cur.execute("SELECT COUNT(grade) FROM grades WHERE studentID=? ",(studentID,))
         allLectures = self.cur.fetchone()
@@ -134,8 +145,8 @@ db = Database('students.db')
 
 # db.insertGrades()
 # res = db.mesosOros(6655)
-# print(res)
-# db.fetchGrades(7889)
+
+# db.fetchGrades(4416031)
 
 
 
