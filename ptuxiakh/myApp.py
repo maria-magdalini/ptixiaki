@@ -131,7 +131,7 @@ class PageOne(tk.Frame):
             self.studentSerialTagEntry.delete(0,tk.END)
 
         def delete_student():
-            warning =  messagebox.askquestion('Οριστική Διαγραφη Μαθητή', 'Θέλετε να διαγράψετε οριστικά αυτόν τον Μαθητή')
+            warning =  messagebox.askquestion('Οριστική Διαγραφη Φοιτητή', 'Θέλετε να διαγράψετε οριστικά αυτόν τον Φοιτητή ;')
             
             if warning =='no':
                 pass
@@ -381,10 +381,15 @@ class PageTwo(PageOne):
             lectureToGradeEntry.insert(tk.END, selectionValue[0])
 
         def delLecture(): # deletelecture
-            iid = tree.view.selection()
-            selectionValue 
-            db.deleteLecture(selectionValue[2])
-            tree.delete_rows(iids=iid) # delete the row from table after deleting lecture
+            warning =  messagebox.askquestion('Οριστική Διαγραφη Μαθήματος', 'Θέλετε να διαγράψετε οριστικά αυτό το Μάθημα ;')
+            
+            if warning =='no':
+                pass
+            else:
+                iid = tree.view.selection()
+                selectionValue 
+                db.deleteLecture(selectionValue[2])
+                tree.delete_rows(iids=iid) # delete the row from table after deleting lecture
             
         def tableReload():# reload the table function
             tree.delete_rows() #clear all rows in Tableview
@@ -632,16 +637,21 @@ class PageTwo(PageOne):
                
         
 
-        
+       
 
         backToStudentsButton = ttk.Button(self, text="Διαχείρηση Φοιτητών",
-                            command=lambda: controller.show_frame(PageOne) ) #acts as a onClick event
+                            command=lambda: chooseStudent() ) #acts as a onClick event
         backToStudentsButton.pack(pady=10, padx=10)
 
         topLevelButton = ttk.Button(self, text="Εμφάνιση βαθμών φοιτητή",
                             command=lambda: top(), bootstyle= "outline" ) #acts as a onClick event
         topLevelButton.pack(pady=10, padx=10)
-
+        
+        def chooseStudent():
+            studentEntry.delete(0,tk.END)
+            
+            studentEntry.clipboard_clear()
+            controller.show_frame(PageOne)
         
 
 
