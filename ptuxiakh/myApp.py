@@ -35,6 +35,7 @@ class App(tk.Tk):
         tk.Tk.__init__(self)
         #tk.Tk.iconbitmap = (self, default="icon.ico") change icon
         tk.Tk.wm_title(self, "University of Thessaly MS") # set title
+        ttk.Style('darkly')
         container = tk.Frame(self) #Construct a frame widget with the parent MASTER.
         container.pack(side='top', fill="both", expand=True)
     
@@ -672,7 +673,7 @@ class PageTwo(PageOne):
                     studentEntry.insert(0,name)
             
                 else:
-                    messagebox.showinfo('Reminder', 'Έχετε εισάγει ήδη έναν φοιτητή')
+                    messagebox.showinfo('Reminder', 'Έχετε εισάγει έναν φοιτητή')
             
             except NameError :
 
