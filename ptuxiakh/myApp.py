@@ -35,7 +35,7 @@ class App(tk.Tk):
         tk.Tk.__init__(self)
         #tk.Tk.iconbitmap = (self, default="icon.ico") change icon
         tk.Tk.wm_title(self, "University of Thessaly MS") # set title
-        ttk.Style('darkly')
+        # ttk.Style('superhero')
         container = tk.Frame(self) #Construct a frame widget with the parent MASTER.
         container.pack(side='top', fill="both", expand=True)
     
@@ -158,31 +158,31 @@ class PageOne(tk.Frame):
         button.pack(side='bottom',pady=10, padx=10)
         studentsFrame = tk.Frame(self)
         studentsFrame.pack(pady=5, padx=5 , fill='x')
-        studentsFrame.config(bg="white")
+       
 
         centerFrame = ttk.Frame(studentsFrame)
         
         centerFrame.pack()
 
-        self.studentNameLabel = ttk.Label(centerFrame, text="Ονομα",background='white')
+        self.studentNameLabel = ttk.Label(centerFrame, text="Ονομα")
         self.studentNameLabel.pack( pady=10, padx=10, side="left")
 
         self.studentNameEntry = ttk.Entry(centerFrame, textvariable=studentName)
         self.studentNameEntry.pack( pady=10, padx=10, side="left") 
 
-        self.studentLastNameLabel = ttk.Label(centerFrame, text="Επώνυμο",background='white')
+        self.studentLastNameLabel = ttk.Label(centerFrame, text="Επώνυμο")
         self.studentLastNameLabel.pack( pady=10, padx=10, side="left")
 
         self.studentLastNameEntry = ttk.Entry(centerFrame, textvariable=studentLastName)
         self.studentLastNameEntry.pack( pady=10, padx=10, side="left")
 
-        self.studentSerialTagLabel = ttk.Label(centerFrame, text="Αριθμός Μητρώου",background='white')
+        self.studentSerialTagLabel = ttk.Label(centerFrame, text="Αριθμός Μητρώου")
         self.studentSerialTagLabel.pack( pady=10, padx=10, side="left")
         
         self.studentSerialTagEntry = ttk.Entry(centerFrame, textvariable=studentSerialTag)
         self.studentSerialTagEntry.pack( pady=10, padx=10, side="left")
 
-        self.studentUniversityLabel = ttk.Label(centerFrame, text="Ονομα Σχολής",background='white')
+        self.studentUniversityLabel = ttk.Label(centerFrame, text="Ονομα Σχολής")
         self.studentUniversityLabel.pack( pady=10, padx=10, side="left")
         
         self.studentUniversityEntry = ttk.Entry(centerFrame, textvariable=studentUniversity)
@@ -423,15 +423,15 @@ class PageTwo(PageOne):
         chooseStudent = ttk.Button(buttonsFrame, text="Εισαγωγή Επιλεγμένου Φοιτητή", command=lambda : labelChange(self))      
         chooseStudent.pack(padx=10, pady=10, side='left')
 
-        insertLecture = ttk.Button(buttonsFrame,text="Εισαγωγή μαθήματος",
+        insertLecture = ttk.Button(buttonsFrame,text="Εισαγωγή μαθήματος",bootstyle='outline',
                                    command= lambda : addL())
         insertLecture.pack(padx=10, pady=10, side='left')
 
-        clearEntrysButton = ttk.Button(buttonsFrame,text="Απαλοιφή Πεδίων",bootstyle='danger',
+        clearEntrysButton = ttk.Button(buttonsFrame,text="Απαλοιφή Πεδίων",bootstyle='outline-wanrning',
                                    command= lambda : clearEntrys())
         clearEntrysButton.pack(padx=10, pady=10, side='left')
 
-        deleteLecture = ttk.Button(buttonsFrame,text="Διαγραφή Μαθήματος",bootstyle='dark',
+        deleteLecture = ttk.Button(buttonsFrame,text="Διαγραφή Μαθήματος",bootstyle='outline-danger',
                                    command= lambda : delLecture())
         deleteLecture.pack(padx=10, pady=10, side='left')
 
@@ -461,7 +461,7 @@ class PageTwo(PageOne):
         insertGradesFrame = tk.Frame(studentFrame)
         insertGradesFrame.pack(pady=10, padx=10,side='bottom')
 
-        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='success', command=lambda: checkStudentEntry())
+        insertGrade = ttk.Button(insertGradesFrame, text="Εισαγωγή Βαθμολογίας",bootstyle='warning', command=lambda: checkStudentEntry())
         insertGrade.pack(pady=10, padx=10)
 
       
@@ -575,7 +575,7 @@ class PageTwo(PageOne):
                 
 
                 homebutton = ttk.Button(updateGradesFrame, text="Αναβαθμολόγηση μαθήματος ",
-                            command= lambda: reloadLectures(studentsLectureValue.get(),lecture[2],studentSeriaTag), bootstyle='outline-dark' ) #acts as a onClick event
+                            command= lambda: reloadLectures(studentsLectureValue.get(),lecture[2],studentSeriaTag), bootstyle='outline-warning' ) #acts as a onClick event
                 homebutton.pack(pady=10, padx=10, side='left')
                 
                 def graphs():
@@ -614,7 +614,7 @@ class PageTwo(PageOne):
                     canvas._tkcanvas.pack(side=tk.TOP, fill='both', expand=True) #packing mavigation toolbar to canvas`
 
                     root.mainloop()
-                homebutton = ttk.Button(updateGradesFrame, text="Γραφική Απεικόνιση Βαθμών ",bootstyle='outline-dark',
+                homebutton = ttk.Button(updateGradesFrame, text="Γραφική Απεικόνιση Βαθμών ",bootstyle='outline-warning',
                             command=  graphs ) #acts as a onClick event
                 homebutton.pack(pady=10, padx=10, side='left')
                 def reloadLectures(lecture, lectureID, studentSeriaTag):
