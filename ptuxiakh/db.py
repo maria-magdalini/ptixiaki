@@ -60,13 +60,16 @@ class Database:
         self.conn.commit()
 
     def update(self,id , firstname,lastname, university, serialtag,student_list,oldStudentsSerial):
-     
+        self.cur.execute('SELECT name,lastname,serial FROM students WHERE serial=?',(serialtag,))
+        res = self.cur.fetchall()
+        if len(res)>0:
+            messagebox.showerror('Error','Το ΑΜ αυτό ανήκει σε άλλον φοιτητή')
+        else:
 
-        self.cur.execute("UPDATE students SET lastname = ?, name = ?, university = ?, serial = ? WHERE id=?", (lastname, firstname, university,serialtag,id))
-      
-        self.cur.execute("UPDATE grades SET studentID = ? WHERE studentID=?",(serialtag,oldStudentsSerial))
-        self.conn.commit()
-        self.showStudents(student_list)
+            self.cur.execute("UPDATE students SET lastname = ?, name = ?, university = ?, serial = ? WHERE id=?", (lastname, firstname, university,serialtag,id))
+            self.cur.execute("UPDATE grades SET studentID = ? WHERE studentID=?",(serialtag,oldStudentsSerial))
+            self.conn.commit()
+            self.showStudents(student_list)
 
 
     def fetchLectures(self):
